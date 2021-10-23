@@ -39,7 +39,7 @@ db.on("error", console.error.bind(console, "MongoDB connection error:"));
 const Schema = mongoose.Schema;
 
 const herbSchema = new Schema({
-  title: String,
+  name: String,
   depth: String,
   spacing: String,
   height: String,
@@ -56,7 +56,7 @@ app.get("/herbs", function(req, res) {
 
   Herb.find(function(err, foundHerbs) {
     // log all articles in console
-     // console.log(foundHerbs);
+    // console.log(foundHerbs);
 
     if (!err) {
       // send articles to client in browser as JSON
@@ -67,8 +67,39 @@ app.get("/herbs", function(req, res) {
   });
 });
 
-app.get("/", function(req, res){
-  res.send("Hello catnip!");
+app.post("/herbs", function(req, res) {
+  // console.log(req.body.name, req.body.depth, req.body.spacing, req.body.height, req.body.days_to_germ, req.body.days_to_harvest, req.body.min_pot_diameter);
+
+  const newHerb = new Herb({
+    name: String,
+    depth: String,
+    spacing: String,
+    height: String,
+    days_to_germ: String,
+    days_to_harvest: String,
+    min_pot_diameter: String
+  });
+  newHerb.save(function(err) {
+    if (!err) {
+      res.send("Successfully added a new herb.");
+    } else {
+      console.log(err);
+    }
+  });
+});
+
+app.delete("/herbs", function(req,res){
+  Herb.deleteMany(function(err){
+    if(!err){
+      res.send("Successfully deleted all herbs");
+    } else {
+      res.send(err);
+    }
+  });
+});
+
+app.get("/", function(req, res) {
+  res.send("Hello, Catnip! 🐱‍👓");
 });
 
 
