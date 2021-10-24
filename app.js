@@ -51,57 +51,130 @@ const herbSchema = new Schema({
 // Compile model from schema
 const Herb = mongoose.model("Herb", herbSchema);
 
-// create get route to fetch articles
-app.get("/herbs", function(req, res) {
+///////////////////Requests Targeting ALL Herbs /////////////////
+// express chainable route handlers
+app.route("/herbs")
 
-  Herb.find(function(err, foundHerbs) {
-    // log all articles in console
-    // console.log(foundHerbs);
+  .get(function(req, res) {
 
-    if (!err) {
-      // send articles to client in browser as JSON
-      res.send(foundHerbs);
-    } else {
-      res.render(err);
-    }
+    Herb.find(function(err, foundHerbs) {
+      // log all herbs in console
+      // console.log(foundHerbs);
+
+      if (!err) {
+        // send herbs to client in browser as JSON
+        res.send(foundHerbs);
+      } else {
+        res.render(err);
+      }
+
+    });
+  })
+
+  .post(function(req, res) {
+
+    const newHerb = new Herb({
+      name: String,
+      depth: String,
+      spacing: String,
+      height: String,
+      days_to_germ: String,
+      days_to_harvest: String,
+      min_pot_diameter: String
+    });
+
+    newHerb.save(function(err) {
+      if (!err) {
+        res.send("Successfully added a new herb.");
+      } else {
+        console.log(err);
+      }
+    });
+  })
+
+  .delete(function(req, res) {
+    Herb.deleteMany(function(err) {
+      if (!err) {
+        res.send("Successfully deleted all herbs");
+      } else {
+        res.send(err);
+      }
+    });
   });
-});
 
-app.post("/herbs", function(req, res) {
-  // console.log(req.body.name, req.body.depth, req.body.spacing, req.body.height, req.body.days_to_germ, req.body.days_to_harvest, req.body.min_pot_diameter);
 
-  const newHerb = new Herb({
-    name: String,
-    depth: String,
-    spacing: String,
-    height: String,
-    days_to_germ: String,
-    days_to_harvest: String,
-    min_pot_diameter: String
+///////Requests Targeting a SINGLE Herb /////////
+app.route("/herbs/:herbName")
+  .get(function(req, res) {
+
+    Herb.findOne({
+      name: req.params.herbName
+    }, function(err, foundHerb) {
+      if (foundHerb) {
+        res.send(foundHerb);
+      } else {
+        res.send("No herb matching that title was found.");
+      }
+    });
+  })
+
+  .put(function(req, res) {
+    Herb.findOneAndUpdate({
+        name: req.params.herbName
+      }, {
+        name: req.body.name,
+        depth: req.body.depth,
+        spacing: req.body.spacing,
+        height: req.body.height,
+        days_to_germ: req.body.days_to_germ,
+        days_to_harvest: req.body.days_to_harvest,
+        min_pot_diameter: req.body.min_pot_diameter
+      }, {
+        overwrite: true
+      },
+      function(err) {
+        if (!err) {
+          res.send("Successfully updated herb.");
+        } else {
+          console.log(err);
+        }
+      }
+    );
+  })
+
+  .patch(function(req, res) {
+
+    // returns JS object of whatever client sent
+    // console.log(req.body);
+
+    Herb.findOneAndUpdate({
+        name: req.params.herbName
+      }, {
+        $set: req.body
+      },
+      function(err) {
+        if (!err) {
+          res.send("Successfully updated herb.");
+        } else {
+          res.send(err);
+        }
+      }
+    );
+  })
+
+  .delete(function(req, res) {
+    Herb.findOneAndDelete({
+        name: req.params.herbName
+      },
+      function(err) {
+        if (!err) {
+          res.send("Successfully deleted herb.");
+        } else {
+          res.send(err);
+        }
+      }
+    );
   });
-  newHerb.save(function(err) {
-    if (!err) {
-      res.send("Successfully added a new herb.");
-    } else {
-      console.log(err);
-    }
-  });
-});
-
-app.delete("/herbs", function(req,res){
-  Herb.deleteMany(function(err){
-    if(!err){
-      res.send("Successfully deleted all herbs");
-    } else {
-      res.send(err);
-    }
-  });
-});
-
-app.get("/", function(req, res) {
-  res.send("Hello, Catnip! 🐱‍👓");
-});
-
 
 app.listen(3000, function(req, res) {
   console.log("Server up and running on port 3000");
